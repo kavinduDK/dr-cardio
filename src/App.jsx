@@ -34,7 +34,7 @@ const QUICK_PROMPTS = [
 ];
 const STORAGE_KEY = 'drcardio-history';
 const KEY_STORAGE  = 'drcardio-groq-key';
-const GROQ_MODEL   = 'llama-3.1-70b-versatile';
+const GROQ_MODEL   = 'llama-3.3-70b-versatile';
 
 // ── localStorage helpers (replaces claude.ai window.storage) ──
 const store = {
@@ -156,7 +156,7 @@ function KeySetupScreen({ onSave }) {
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
           <div style={{width:64,height:64,borderRadius:"50%",background:"linear-gradient(135deg,#6B2D3E,#C0392B)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><HeartIcon size={32}/></div>
           <h1 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:600,color:"#2C1810",margin:0}}>Dr. Cardio</h1>
-          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Powered by Kavindu</p>
+          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Sri Lankan Heart & General Health Advisor</p>
         </div>
         <div style={{background:"#F5F0E8",borderRadius:12,padding:"14px 16px",marginBottom:22,fontSize:13,color:"#5C4033",lineHeight:1.6}}>
           <strong style={{color:"#2C1810"}}>One-time setup.</strong> You need a free Groq API key. No credit card required.
@@ -366,7 +366,7 @@ export default function DrCardio() {
           <div style={{fontFamily:"Georgia,serif",fontSize:17,fontWeight:600,color:"#2C1810",letterSpacing:"-0.2px"}}>Dr. Cardio</div>
           <div style={{fontSize:12,color:"#8B7355",fontWeight:300,marginTop:1}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",display:"inline-block",marginRight:5,animation:"blink 2s ease-in-out infinite"}}/>
-            Groq · Llama 3.1 70B · Free
+            General Physician & Senior Cardiologist · Sri Lanka
           </div>
         </div>
         <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
