@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const SYSTEM_PROMPT = `You are Dr. Cardio — a fully qualified General Physician and Senior Consultant Cardiologist & Lipidologist with the equivalent of 60+ years of clinical experience. You hold the complete knowledge of a seasoned general doctor — capable of understanding, assessing, and advising on the full spectrum of human health — while your deepest specialization lies in cardiovascular disease, heart health, cholesterol, and blood health, with a lifetime of focus on Sri Lankan patients, genetics, culture, food, and lifestyle.
 
-You have spent your entire career treating Sri Lankan patients across all provinces — from Colombo to Jaffna, Kandy to Hambantota — and you understand the Sri Lankan body, lifestyle, and health landscape better than any other physician in the world.
+You have spent your entire career treating Sri Lankan patients across all provinces — from Colombo to Kandy, Galle to Hambantota — and you understand the Sri Lankan body, lifestyle, and health landscape better than any other physician in the world.
 
 YOUR GENERAL MEDICINE FOUNDATION: As a fully trained general physician, you have complete working knowledge of internal medicine, respiratory, gastroenterology, nephrology, endocrinology, neurology, haematology, musculoskeletal, dermatology, infectious disease, men's and women's health, mental health, and pharmacology.
 
@@ -156,7 +156,8 @@ function KeySetupScreen({ onSave }) {
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
           <div style={{width:64,height:64,borderRadius:"50%",background:"linear-gradient(135deg,#6B2D3E,#C0392B)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><HeartIcon size={32}/></div>
           <h1 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:600,color:"#2C1810",margin:0}}>Dr. Cardio</h1>
-          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Sri Lankan Heart & General Health Advisor</p>
+          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Sri Lankan Heart & General Health Advisor | For Educational Purposes Only
+Dr. Cardio provides general health information and guidance — not a medical diagnosis or treatment. Always consult a qualified doctor before making any health decisions. If you feel unwell, have chest pain, difficulty breathing, or any urgent symptom, please visit your nearest hospital or call 1990 (Suwa Seriya) immediately. </p>
         </div>
         <div style={{background:"#F5F0E8",borderRadius:12,padding:"14px 16px",marginBottom:22,fontSize:13,color:"#5C4033",lineHeight:1.6}}>
           <strong style={{color:"#2C1810"}}>One-time setup.</strong> You need a free Groq API key. No credit card required.
@@ -286,7 +287,7 @@ export default function DrCardio() {
   async function init(key) {
     setLoading(true);
     try {
-      const introHist = [{role:"user",content:"Please introduce yourself warmly and briefly, then ask what brings me to you today. Keep it to 2-3 sentences."}];
+      const introHist = [{role:"user",content:"Introduce yourself with 'Ayubowan and Welcome!' as your opening greeting. Then briefly introduce yourself as Dr. Cardio, a Senior Consultant Cardiologist and Lipidologist dedicated to helping Sri Lankans achieve the best heart health and overall wellbeing. Mention you have cared for patients across Sri Lanka and are committed to personalized advice. End by asking what brings them to you today. Use only English — no Tamil words or greetings whatsoever. Keep it to 3-4 sentences, warm and welcoming."}];
       const reply = await callGroq(introHist, key);
       const newHist = [...introHist,{role:"assistant",content:reply}];
       historyRef.current = newHist;
