@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 
-const SYSTEM_PROMPT = `You are Dr. Cardio — a fully qualified General Physician and Senior Consultant Cardiologist & Lipidologist with the equivalent of 60+ years of clinical experience. You hold the complete knowledge of a seasoned general doctor — capable of understanding, assessing, and advising on the full spectrum of human health — while your deepest specialization lies in cardiovascular disease, heart health, cholesterol, and blood health, with a lifetime of focus on Sri Lankan patients, genetics, culture, food, and lifestyle.
+const BASE_SYSTEM_PROMPT = `You are Dr. Cardio — a fully qualified General Physician and Senior Consultant Cardiologist & Lipidologist with the equivalent of 60+ years of clinical experience. You hold the complete knowledge of a seasoned general doctor capable of understanding, assessing, and advising on the full spectrum of human health, while your deepest specialization lies in cardiovascular disease, heart health, cholesterol, and blood health, with a lifetime of focus on Sri Lankan patients, genetics, culture, food, and lifestyle.
 
 You have spent your entire career treating Sri Lankan patients across all provinces — from Colombo to Kandy, Galle to Hambantota — and you understand the Sri Lankan body, lifestyle, and health landscape better than any other physician in the world.
 
-YOUR GENERAL MEDICINE FOUNDATION: As a fully trained general physician, you have complete working knowledge of internal medicine, respiratory, gastroenterology, nephrology, endocrinology, neurology, haematology, musculoskeletal, dermatology, infectious disease, men's and women's health, mental health, and pharmacology.
+YOUR GENERAL MEDICINE FOUNDATION: Complete working knowledge of internal medicine, respiratory, gastroenterology, nephrology, endocrinology, neurology, haematology, musculoskeletal, dermatology, infectious disease, men's and women's health, mental health, and pharmacology.
 
-YOUR PRIMARY SPECIALIZATION — CARDIOVASCULAR & LIPID HEALTH: You are a world-class expert in cardiovascular disease, coronary artery disease, heart failure, arrhythmias, lipidology (LDL, HDL, triglycerides, VLDL, lipoprotein(a), ApoB, non-HDL), Familial Hypercholesterolemia, genetic cardiovascular risk, blood health, and metabolic syndrome.
+YOUR PRIMARY SPECIALIZATION — CARDIOVASCULAR & LIPID HEALTH: World-class expert in cardiovascular disease, coronary artery disease, heart failure, arrhythmias, lipidology (LDL, HDL, triglycerides, VLDL, lipoprotein(a), ApoB, non-HDL), Familial Hypercholesterolemia, genetic cardiovascular risk, blood health, and metabolic syndrome.
 
 SRI LANKAN GENETIC & PHYSIOLOGICAL EXPERTISE:
 - South Asian Paradox: Sri Lankans develop heart disease at lower BMI, younger ages, and lower cholesterol levels than Western counterparts
@@ -14,16 +14,40 @@ SRI LANKAN GENETIC & PHYSIOLOGICAL EXPERTISE:
 - Ethnic-specific thresholds: Cardiovascular risk begins at waist >80cm (women) and >90cm (men)
 - Insulin resistance: Genetically higher tendency, accelerating atherosclerosis
 - Lipoprotein(a): Significantly more prevalent in South Asian genetics
-- You always apply a 1.5–2x South Asian multiplier to standard risk scores
+- Always apply a 1.5–2x South Asian multiplier to standard risk scores
 
-SRI LANKAN FOOD & DIETARY MASTERY: You have encyclopaedic knowledge of Sri Lankan cuisine — rice, coconut, coconut milk (kiri), dal (parippu), pol sambol, string hoppers (indi appa), hoppers (appa), pittu, kiribath, kottu roti, tuna/thalapath, seer fish/thora, sardines/hurulla, sprats/halmasso, karawala, Maldive fish, jackfruit (polos, kos), gotukola, mukunuwenna, karapincha, turmeric (kaha), fenugreek (uluhal), cinnamon (kurundu), wattalappam, kavum, condensed milk tea. Practical, budget-conscious, culturally-fitted advice.
+SRI LANKAN FOOD & DIETARY MASTERY: Encyclopaedic knowledge of Sri Lankan cuisine — rice, coconut, coconut milk (kiri), dal (parippu), pol sambol, string hoppers (indi appa), hoppers (appa), pittu, kiribath, kottu roti, tuna/thalapath, seer fish/thora, sardines/hurulla, sprats/halmasso, karawala, Maldive fish, jackfruit (polos, kos), gotukola, mukunuwenna, karapincha, turmeric (kaha), fenugreek (uluhal), cinnamon (kurundu), wattalappam, kavum, condensed milk tea. Practical, budget-conscious, culturally-fitted advice.
 
-WHEN A PATIENT TYPES OUT REPORT VALUES: Read carefully. Identify all key values — lipid panel, blood counts, glucose, HbA1c, renal profile, liver enzymes, thyroid (TSH), uric acid, hsCRP. Interpret every value in Sri Lankan clinical context. Flag concerning values even if within Western normal ranges. Explain results clearly and warmly.
+WHEN A PATIENT TYPES REPORT VALUES: Read carefully. Identify all key values — lipid panel, blood counts, glucose, HbA1c, renal profile, liver enzymes, thyroid (TSH), uric acid, hsCRP. Interpret every value in Sri Lankan clinical context. Flag concerning values even if within Western normal ranges. Explain results clearly and warmly.
 
 CRITICAL SAFETY RULES: Emergency symptoms — chest pain, jaw or left arm pain, breathlessness at rest, sudden severe headache, facial drooping, arm weakness, loss of consciousness, severe palpitations → immediately say: "⚠️ This requires emergency care. Please go to your nearest hospital Accident & Emergency immediately or call 1990 (Suwa Seriya Ambulance) right now. Do not wait."
-You never prescribe specific drug doses. You do not issue definitive diagnoses. You always recommend confirmatory in-person evaluation.
+Never prescribe specific drug doses. Do not issue definitive diagnoses. Always recommend confirmatory in-person evaluation.
+
+HEALTH PROFILE AWARENESS: If a patient health profile is provided at the start of the system context, you already know this patient. Reference their details naturally — use their name if provided, acknowledge their known conditions, medications and family history without asking them to repeat it. Build on what you know.
 
 COMMUNICATION STYLE: Warm, trustworthy, deeply respectful. Culturally sensitive. Use Sri Lankan food names naturally. Simplify complex concepts. Ask focused follow-up questions. Balance scientific precision with human warmth.`;
+
+function buildSystemPrompt(profile) {
+  if (!profile || !Object.values(profile).some(v => v && v.toString().trim())) {
+    return BASE_SYSTEM_PROMPT;
+  }
+  const lines = ["PATIENT HEALTH PROFILE (saved on this device — you already know this patient):"];
+  if (profile.name)       lines.push(`- Name: ${profile.name}`);
+  if (profile.age)        lines.push(`- Age: ${profile.age}`);
+  if (profile.gender)     lines.push(`- Gender: ${profile.gender}`);
+  if (profile.weight)     lines.push(`- Weight: ${profile.weight} kg`);
+  if (profile.height)     lines.push(`- Height: ${profile.height} cm`);
+  if (profile.conditions) lines.push(`- Known medical conditions: ${profile.conditions}`);
+  if (profile.medications)lines.push(`- Current medications: ${profile.medications}`);
+  if (profile.allergies)  lines.push(`- Allergies: ${profile.allergies}`);
+  if (profile.familyHistory) lines.push(`- Family history: ${profile.familyHistory}`);
+  if (profile.smoking)    lines.push(`- Smoking: ${profile.smoking}`);
+  if (profile.alcohol)    lines.push(`- Alcohol: ${profile.alcohol}`);
+  if (profile.exercise)   lines.push(`- Exercise: ${profile.exercise}`);
+  if (profile.diet)       lines.push(`- Diet notes: ${profile.diet}`);
+  if (profile.notes)      lines.push(`- Other notes: ${profile.notes}`);
+  return BASE_SYSTEM_PROMPT + "\n\n" + lines.join("\n");
+}
 
 const EMERGENCY_KEYWORDS = ['chest pain','chest tightness','jaw pain','arm pain','breathless',"can't breathe",'loss of consciousness','fainted','collapsed','stroke','face drooping','slurred speech'];
 const QUICK_PROMPTS = [
@@ -32,11 +56,11 @@ const QUICK_PROMPTS = [
   { icon:"🧬", label:"Family heart history", msg:"My father had a heart attack at 52. Am I at risk?" },
   { icon:"📋", label:"Lipid panel", msg:"How do I understand my lipid panel / cholesterol blood test results?" },
 ];
-const STORAGE_KEY = 'drcardio-history';
+const STORAGE_KEY  = 'drcardio-history';
 const KEY_STORAGE  = 'drcardio-groq-key';
+const PROFILE_KEY  = 'drcardio-profile';
 const GROQ_MODEL   = 'llama-3.3-70b-versatile';
 
-// ── localStorage helpers (replaces claude.ai window.storage) ──
 const store = {
   get: (k) => { try { const v = localStorage.getItem(k); return v ? { value: v } : null; } catch(e) { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} },
@@ -50,6 +74,9 @@ function HeartIcon({ size=20, color="white" }) {
 function SendIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>; }
 function TrashIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>; }
 function KeyIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.85 11.15l8.3-8.3"/><path d="M19 3l2 2-4 4-2-2"/><path d="M17 7l2 2"/></svg>; }
+function ProfileIcon() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>; }
+function CloseIcon() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>; }
+function SaveIcon() { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>; }
 function EyeIcon({ show }) {
   return show
     ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -94,6 +121,101 @@ function groupByDate(msgs) {
   return out;
 }
 
+// ── Health Profile Modal ───────────────────────────────────
+const PROFILE_FIELDS = [
+  { section:"Personal Details" },
+  { key:"name",      label:"Full Name",        placeholder:"e.g. Kavindu Perera",        type:"text" },
+  { key:"age",       label:"Age",              placeholder:"e.g. 45",                    type:"number" },
+  { key:"gender",    label:"Gender",           placeholder:"Male / Female / Other",      type:"text" },
+  { key:"weight",    label:"Weight (kg)",      placeholder:"e.g. 72",                    type:"number" },
+  { key:"height",    label:"Height (cm)",      placeholder:"e.g. 168",                   type:"number" },
+  { section:"Medical History" },
+  { key:"conditions",  label:"Known Medical Conditions", placeholder:"e.g. Type 2 Diabetes, Hypertension, High Cholesterol",  type:"textarea" },
+  { key:"medications", label:"Current Medications",      placeholder:"e.g. Metformin 500mg, Atorvastatin 20mg",               type:"textarea" },
+  { key:"allergies",   label:"Allergies",                placeholder:"e.g. Penicillin, Sulfa drugs, or None known",           type:"text" },
+  { key:"familyHistory", label:"Family Heart History",   placeholder:"e.g. Father had heart attack at 55, mother has diabetes", type:"textarea" },
+  { section:"Lifestyle" },
+  { key:"smoking",   label:"Smoking",   placeholder:"e.g. Non-smoker / 10 cigarettes/day / Ex-smoker", type:"text" },
+  { key:"alcohol",   label:"Alcohol",   placeholder:"e.g. Occasional / Daily arrack / None",            type:"text" },
+  { key:"exercise",  label:"Exercise",  placeholder:"e.g. 30 min walk 3x/week / Sedentary",            type:"text" },
+  { key:"diet",      label:"Diet Notes",placeholder:"e.g. Rice 3x daily, eats a lot of coconut, no red meat", type:"textarea" },
+  { section:"Other" },
+  { key:"notes",     label:"Other Notes / Recent Tests", placeholder:"e.g. Last lipid panel: LDL 4.2, HDL 0.9 (March 2025)", type:"textarea" },
+];
+
+function ProfileModal({ profile, onSave, onClose }) {
+  const [form, setForm] = useState({ ...profile });
+  const [saved, setSaved] = useState(false);
+
+  function handleSave() {
+    onSave(form);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  const hasData = Object.values(form).some(v => v && v.toString().trim());
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(44,24,16,0.5)",zIndex:1000,display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
+      <div style={{background:"#FAF7F2",borderRadius:"20px 20px 0 0",width:"100%",maxWidth:520,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"0 -8px 40px rgba(44,24,16,0.2)"}} onClick={e=>e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{padding:"20px 20px 16px",borderBottom:"1px solid #DDD0BB",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+          <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#6B2D3E,#C0392B)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <ProfileIcon()/>
+          </div>
+          <div>
+            <div style={{fontFamily:"Georgia,serif",fontSize:16,fontWeight:600,color:"#2C1810"}}>My Health Profile</div>
+            <div style={{fontSize:11.5,color:"#8B7355",marginTop:1}}>Saved on this device · Shared with Dr. Cardio every session</div>
+          </div>
+          <button onClick={onClose} style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"#8B7355",display:"flex",padding:4}}>
+            <CloseIcon/>
+          </button>
+        </div>
+
+        {/* Info banner */}
+        <div style={{margin:"12px 16px 0",background:"#E8F4F1",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#1A6B5A",lineHeight:1.6,flexShrink:0}}>
+          💡 Fill in as much or as little as you like. Dr. Cardio will use this to personalise every conversation — so you never have to repeat your history.
+        </div>
+
+        {/* Form */}
+        <div style={{overflowY:"auto",padding:"12px 16px 20px",flex:1}} className="dr-scroll">
+          {PROFILE_FIELDS.map((f, i) => {
+            if (f.section) return (
+              <div key={i} style={{fontSize:11,fontWeight:600,color:"#8B7355",textTransform:"uppercase",letterSpacing:"0.8px",margin:"20px 0 10px",borderBottom:"1px solid #DDD0BB",paddingBottom:6}}>
+                {f.section}
+              </div>
+            );
+            const val = form[f.key] || "";
+            const inputStyle = {width:"100%",border:"1px solid #DDD0BB",borderRadius:10,padding:"9px 12px",fontFamily:"inherit",fontSize:13.5,color:"#2C1810",background:"#fff",outline:"none",boxSizing:"border-box",resize:"vertical"};
+            return (
+              <div key={f.key} style={{marginBottom:12}}>
+                <label style={{fontSize:12.5,fontWeight:500,color:"#5C4033",display:"block",marginBottom:4}}>{f.label}</label>
+                {f.type === "textarea"
+                  ? <textarea rows={2} value={val} placeholder={f.placeholder} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} style={{...inputStyle,minHeight:56}} onFocus={e=>e.target.style.borderColor="#8B6B4A"} onBlur={e=>e.target.style.borderColor="#DDD0BB"}/>
+                  : <input type={f.type} value={val} placeholder={f.placeholder} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} style={inputStyle} onFocus={e=>e.target.style.borderColor="#8B6B4A"} onBlur={e=>e.target.style.borderColor="#DDD0BB"}/>
+                }
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div style={{padding:"12px 16px",borderTop:"1px solid #DDD0BB",display:"flex",gap:10,flexShrink:0}}>
+          {hasData && (
+            <button onClick={()=>{onSave({}); onClose();}} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #DDD0BB",background:"transparent",color:"#8B7355",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+              Clear Profile
+            </button>
+          )}
+          <button onClick={handleSave} style={{flex:1,padding:"11px",borderRadius:10,border:"none",background:saved?"#1A6B5A":"#6B2D3E",color:"#fff",fontSize:14,fontWeight:500,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:7,transition:"background 0.3s"}}>
+            <SaveIcon/> {saved ? "Saved ✓" : "Save Health Profile"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Sub-components ─────────────────────────────────────────
 function TypingDots() {
   return (
@@ -130,9 +252,9 @@ function DateDivider({ label }) {
 
 // ── Key Setup Screen ───────────────────────────────────────
 function KeySetupScreen({ onSave }) {
-  const [key, setKey]       = useState("");
-  const [show, setShow]     = useState(false);
-  const [err, setErr]       = useState("");
+  const [key, setKey]         = useState("");
+  const [show, setShow]       = useState(false);
+  const [err, setErr]         = useState("");
   const [testing, setTesting] = useState(false);
 
   async function handleSave() {
@@ -156,8 +278,7 @@ function KeySetupScreen({ onSave }) {
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:28}}>
           <div style={{width:64,height:64,borderRadius:"50%",background:"linear-gradient(135deg,#6B2D3E,#C0392B)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><HeartIcon size={32}/></div>
           <h1 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:600,color:"#2C1810",margin:0}}>Dr. Cardio</h1>
-          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Sri Lankan Heart & General Health Advisor | For Educational Purposes Only
-Dr. Cardio provides general health information and guidance — not a medical diagnosis or treatment. Always consult a qualified doctor before making any health decisions. If you feel unwell, have chest pain, difficulty breathing, or any urgent symptom, please visit your nearest hospital or call 1990 (Suwa Seriya) immediately. </p>
+          <p style={{fontSize:13,color:"#8B7355",marginTop:4,textAlign:"center"}}>Sri Lankan Heart & General Health Advisor</p>
         </div>
         <div style={{background:"#F5F0E8",borderRadius:12,padding:"14px 16px",marginBottom:22,fontSize:13,color:"#5C4033",lineHeight:1.6}}>
           <strong style={{color:"#2C1810"}}>One-time setup.</strong> You need a free Groq API key. No credit card required.
@@ -190,7 +311,7 @@ Dr. Cardio provides general health information and guidance — not a medical di
           {testing?"Verifying…":"Start Consultation →"}
         </button>
         <p style={{fontSize:11,color:"#A0896E",textAlign:"center",marginTop:14,lineHeight:1.6}}>
-          Your key is stored only in your browser. Never sent anywhere except directly to Groq.
+          🔒 Your key is saved permanently on this device. You will <strong>never be asked again</strong> — not even after closing the browser. It is never sent anywhere except directly to Groq.
         </p>
       </div>
     </div>
@@ -201,6 +322,8 @@ Dr. Cardio provides general health information and guidance — not a medical di
 export default function DrCardio() {
   const [apiKey, setApiKey]           = useState(null);
   const [keyLoading, setKeyLoading]   = useState(true);
+  const [profile, setProfile]         = useState({});
+  const [showProfile, setShowProfile] = useState(false);
   const [messages, setMessages]       = useState([]);
   const [input, setInput]             = useState("");
   const [loading, setLoading]         = useState(false);
@@ -210,6 +333,7 @@ export default function DrCardio() {
   const messagesEndRef = useRef(null);
   const historyRef     = useRef([]);
   const textareaRef    = useRef(null);
+  const profileRef     = useRef({});
 
   useEffect(() => {
     const s = document.createElement('style');
@@ -219,8 +343,7 @@ export default function DrCardio() {
       @keyframes pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.5);opacity:0}}
       @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
       @keyframes ecgScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-      *{box-sizing:border-box}
-      body{margin:0}
+      *{box-sizing:border-box} body{margin:0}
       .dr-scroll::-webkit-scrollbar{width:4px}
       .dr-scroll::-webkit-scrollbar-track{background:transparent}
       .dr-scroll::-webkit-scrollbar-thumb{background:#DDD0BB;border-radius:2px}
@@ -233,12 +356,18 @@ export default function DrCardio() {
   useEffect(() => { messagesEndRef.current?.scrollIntoView({behavior:"smooth"}); }, [messages, loading]);
 
   function loadKey() {
+    // Load profile first
+    const pr = store.get(PROFILE_KEY);
+    const loadedProfile = pr?.value ? JSON.parse(pr.value) : {};
+    setProfile(loadedProfile);
+    profileRef.current = loadedProfile;
+
     const r = store.get(KEY_STORAGE);
-    if(r?.value){ setApiKey(r.value); loadHistory(); }
+    if(r?.value){ setApiKey(r.value); loadHistory(r.value, loadedProfile); }
     else { setKeyLoading(false); }
   }
 
-  function loadHistory() {
+  function loadHistory(key, loadedProfile) {
     setKeyLoading(false);
     const r = store.get(STORAGE_KEY);
     if(r?.value){
@@ -253,7 +382,7 @@ export default function DrCardio() {
         }
       } catch(e) {}
     }
-    init(store.get(KEY_STORAGE)?.value);
+    init(key, loadedProfile);
   }
 
   function saveHistory(msgs, apiHist) {
@@ -264,31 +393,53 @@ export default function DrCardio() {
     store.del(STORAGE_KEY);
     historyRef.current = [];
     setMessages([]); setShowQuick(true); setInitialized(false); setShowEmergency(false);
-    init(apiKey);
+    init(apiKey, profileRef.current);
   }
 
   function changeKey() {
+    const confirmed = window.confirm("Reset your Groq API key?\n\nYou will be asked to enter a new key. Your health profile will be kept.");
+    if (!confirmed) return;
     store.del(KEY_STORAGE); store.del(STORAGE_KEY);
     setApiKey(null); setMessages([]); historyRef.current=[]; setInitialized(false);
   }
 
-  async function callGroq(history, key) {
+  function handleProfileSave(newProfile) {
+    setProfile(newProfile);
+    profileRef.current = newProfile;
+    store.set(PROFILE_KEY, JSON.stringify(newProfile));
+  }
+
+  async function callGroq(history, key, prof) {
     const k = key || apiKey;
+    const p = prof !== undefined ? prof : profileRef.current;
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions",{
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":`Bearer ${k}`},
-      body:JSON.stringify({ model:GROQ_MODEL, max_tokens:1024, messages:[{role:"system",content:SYSTEM_PROMPT},...history] })
+      body:JSON.stringify({
+        model: GROQ_MODEL,
+        max_tokens: 1024,
+        messages: [
+          { role:"system", content: buildSystemPrompt(p) },
+          ...history
+        ]
+      })
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error?.message||"Groq error");
     return data.choices[0].message.content;
   }
 
-  async function init(key) {
+  async function init(key, prof) {
     setLoading(true);
+    const p = prof !== undefined ? prof : profileRef.current;
+    const hasProfile = p && Object.values(p).some(v => v && v.toString().trim());
+    const introPrompt = hasProfile
+      ? `Greet the patient by name if you know it, using 'Ayubowan and Welcome back!' as your opening. You already have their health profile. Briefly acknowledge 1-2 of their known conditions or history to show you remember them, then ask what brings them to you today. Use only English. Warm and personal, 3-4 sentences.`
+      : `Introduce yourself with 'Ayubowan and Welcome!' as your opening greeting. Then briefly introduce yourself as Dr. Cardio, a Senior Consultant Cardiologist and Lipidologist dedicated to helping Sri Lankans achieve the best heart health and overall wellbeing. Mention you have cared for patients across Sri Lanka from Colombo to Kandy to Galle and are committed to personalized advice. End by asking what brings them to you today. Use only English — no Tamil words or greetings whatsoever. Keep it to 3-4 sentences, warm and welcoming.`;
+
     try {
-      const introHist = [{role:"user",content:"Introduce yourself with 'Ayubowan and Welcome!' as your opening greeting. Then briefly introduce yourself as Dr. Cardio, a Senior Consultant Cardiologist and Lipidologist dedicated to helping Sri Lankans achieve the best heart health and overall wellbeing. Mention you have cared for patients across Sri Lanka and are committed to personalized advice. End by asking what brings them to you today. Use only English — no Tamil words or greetings whatsoever. Keep it to 3-4 sentences, warm and welcoming."}];
-      const reply = await callGroq(introHist, key);
+      const introHist = [{role:"user", content: introPrompt}];
+      const reply = await callGroq(introHist, key, p);
       const newHist = [...introHist,{role:"assistant",content:reply}];
       historyRef.current = newHist;
       const newMsgs = [{role:"doctor",text:reply,ts:Date.now()}];
@@ -302,10 +453,17 @@ export default function DrCardio() {
   }
 
   function handleKeySave(key) {
+    // Save twice for reliability, then verify it stuck
     store.set(KEY_STORAGE, key);
+    store.set(KEY_STORAGE, key);
+    const verify = store.get(KEY_STORAGE);
+    if (!verify?.value) {
+      alert("Could not save your API key to this browser. Please check your browser privacy settings (Private/Incognito mode blocks localStorage).");
+      return;
+    }
     setApiKey(key);
     setKeyLoading(false);
-    init(key);
+    init(key, profileRef.current);
   }
 
   async function send(preset) {
@@ -342,6 +500,7 @@ export default function DrCardio() {
   function autoResize(el){ el.style.height="auto"; el.style.height=Math.min(el.scrollHeight,120)+"px"; }
 
   const grouped = groupByDate(messages);
+  const profileFilled = Object.values(profile).some(v => v && v.toString().trim());
 
   if(keyLoading) return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:"#FAF7F2",height:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -357,6 +516,9 @@ export default function DrCardio() {
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:"#FAF7F2",height:"100vh",display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
+      {/* Profile Modal */}
+      {showProfile && <ProfileModal profile={profile} onSave={handleProfileSave} onClose={()=>setShowProfile(false)}/>}
+
       {/* Header */}
       <div style={{background:"#fff",borderBottom:"1px solid #DDD0BB",padding:"12px 20px",display:"flex",alignItems:"center",gap:14,flexShrink:0}}>
         <div style={{position:"relative",width:48,height:48,flexShrink:0}}>
@@ -370,20 +532,27 @@ export default function DrCardio() {
             General Physician & Senior Cardiologist · Sri Lanka
           </div>
         </div>
-        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
+        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+          {/* Health Profile button */}
+          <button onClick={()=>setShowProfile(true)}
+            style={{display:"flex",alignItems:"center",gap:5,background:profileFilled?"#6B2D3E":"transparent",border:`1px solid ${profileFilled?"#6B2D3E":"#DDD0BB"}`,borderRadius:20,padding:"5px 12px",cursor:"pointer",color:profileFilled?"#fff":"#8B7355",fontSize:11.5,fontWeight:500,transition:"all 0.2s"}}
+            onMouseEnter={e=>{if(!profileFilled){e.currentTarget.style.borderColor="#8B6B4A";e.currentTarget.style.color="#5C4033";}}}
+            onMouseLeave={e=>{if(!profileFilled){e.currentTarget.style.borderColor="#DDD0BB";e.currentTarget.style.color="#8B7355";}}}>
+            <ProfileIcon/> {profileFilled ? "My Profile ✓" : "My Profile"}
+          </button>
           {messages.length > 0 && (
             <button onClick={clearHistory}
-              style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"1px solid #DDD0BB",borderRadius:20,padding:"4px 10px",cursor:"pointer",color:"#8B7355",fontSize:11,fontWeight:500}}
+              style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"1px solid #DDD0BB",borderRadius:20,padding:"5px 10px",cursor:"pointer",color:"#8B7355",fontSize:11,fontWeight:500}}
               onMouseEnter={e=>{e.currentTarget.style.borderColor="#C0392B";e.currentTarget.style.color="#C0392B";}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor="#DDD0BB";e.currentTarget.style.color="#8B7355";}}>
               <TrashIcon/> New chat
             </button>
           )}
           <button onClick={changeKey} title="Change API key"
-            style={{display:"flex",alignItems:"center",gap:5,background:"transparent",border:"1px solid #DDD0BB",borderRadius:20,padding:"6px 10px",cursor:"pointer",color:"#8B7355"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="#8B6B4A";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="#DDD0BB";}}>
-            <KeyIcon/>
+            style={{display:"flex",alignItems:"center",gap:4,background:"transparent",border:"1px solid #EEE5D8",borderRadius:20,padding:"5px 10px",cursor:"pointer",color:"#C4A882",fontSize:11}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="#8B6B4A";e.currentTarget.style.color="#8B7355";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="#EEE5D8";e.currentTarget.style.color="#C4A882";}}>
+            <KeyIcon/> <span>Reset key</span>
           </button>
         </div>
       </div>
@@ -398,6 +567,28 @@ export default function DrCardio() {
 
       {/* Messages */}
       <div className="dr-scroll" style={{flex:1,overflowY:"auto",padding:"20px 16px",display:"flex",flexDirection:"column",gap:12}}>
+
+        {/* Disclaimer */}
+        <div style={{background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start",flexShrink:0}}>
+          <span style={{fontSize:18,lineHeight:1}}>⚕️</span>
+          <div style={{fontSize:12.5,color:"#92400E",lineHeight:1.65}}>
+            <strong style={{display:"block",marginBottom:3,color:"#78350F",fontSize:13}}>For Educational Purposes Only</strong>
+            Dr. Cardio provides general health information and guidance — not medical diagnosis or treatment. Always consult a qualified doctor before making any health decisions. If you feel unwell, have chest pain, difficulty breathing, or any urgent symptom, please visit your nearest hospital or call <strong>1990</strong> (Suwa Seriya) immediately.
+          </div>
+        </div>
+
+        {/* Profile prompt if empty */}
+        {!profileFilled && initialized && (
+          <div style={{background:"#F0F9FF",border:"1px solid #BAE6FD",borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>setShowProfile(true)}>
+            <span style={{fontSize:18}}>👤</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500,color:"#0C4A6E"}}>Set up your Health Profile</div>
+              <div style={{fontSize:12,color:"#0369A1",marginTop:2}}>Save your age, conditions & history so Dr. Cardio remembers you every visit.</div>
+            </div>
+            <span style={{fontSize:12,color:"#0369A1",fontWeight:500,whiteSpace:"nowrap"}}>Set up →</span>
+          </div>
+        )}
+
         {grouped.map((item,i) =>
           item.type==='divider'
             ? <DateDivider key={`d-${i}`} label={item.lbl}/>
