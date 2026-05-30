@@ -162,7 +162,7 @@ function ProfileModal({ profile, onSave, onClose }) {
         {/* Header */}
         <div style={{padding:"20px 20px 16px",borderBottom:"1px solid #DDD0BB",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
           <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#6B2D3E,#C0392B)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <ProfileIcon()/>
+            <ProfileIcon />
           </div>
           <div>
             <div style={{fontFamily:"Georgia,serif",fontSize:16,fontWeight:600,color:"#2C1810"}}>My Health Profile</div>
